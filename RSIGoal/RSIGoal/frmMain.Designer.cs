@@ -28,37 +28,40 @@
         /// </summary>
         private void InitializeComponent()
         {
-			this.txtGoal = new System.Windows.Forms.TextBox();
+			this.cmdGrabData = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
-			// txtGoal
+			// cmdGrabData
 			// 
-			this.txtGoal.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(240)))), ((int)(((byte)(255)))));
-			this.txtGoal.Location = new System.Drawing.Point(86, 12);
-			this.txtGoal.Multiline = true;
-			this.txtGoal.Name = "txtGoal";
-			this.txtGoal.Size = new System.Drawing.Size(254, 51);
-			this.txtGoal.TabIndex = 0;
-			this.txtGoal.Text = "$52,000,000";
-			this.txtGoal.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			this.cmdGrabData.Location = new System.Drawing.Point(235, 98);
+			this.cmdGrabData.Name = "cmdGrabData";
+			this.cmdGrabData.Size = new System.Drawing.Size(112, 27);
+			this.cmdGrabData.TabIndex = 0;
+			this.cmdGrabData.Text = "Grab Data";
+			this.cmdGrabData.UseVisualStyleBackColor = true;
+			this.cmdGrabData.Click += new System.EventHandler(this.cmdGrabData_Click);
 			// 
 			// frmMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(359, 118);
-			this.Controls.Add(this.txtGoal);
+			this.ClientSize = new System.Drawing.Size(359, 137);
+			this.Controls.Add(this.cmdGrabData);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			this.MaximizeBox = false;
+			this.MinimizeBox = false;
 			this.Name = "frmMain";
-			this.Text = "Form1";
+			this.Text = "Goal";
+			this.ResizeEnd += new System.EventHandler(this.frmMain_ResizeEnd);
 			this.Paint += new System.Windows.Forms.PaintEventHandler(this.frmMain_Paint);
 			this.ResumeLayout(false);
-			this.PerformLayout();
 
         }
 
         #endregion
 
-		private System.Windows.Forms.TextBox txtGoal;
-    }
+		private System.Windows.Forms.Button cmdGrabData;
+
+	}
 }
 
