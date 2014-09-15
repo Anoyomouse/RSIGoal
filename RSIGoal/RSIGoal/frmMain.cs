@@ -19,6 +19,7 @@ namespace RSIGoal
 {
     public partial class frmMain : Form
     {
+        /// <summary>Initializes a new instance of the <see cref="frmMain"/> class.</summary>
         public frmMain()
         {
             InitializeComponent();
@@ -28,8 +29,31 @@ namespace RSIGoal
 
 			shadowBrush = new SolidBrush(Color.Black);
 			textBrush = new SolidBrush(Color.FromArgb(0x00, 0xf0, 0xff));
+
+            if (File.Exists("SavedData.json"))
+            {
+                LoadSavedData();
+            }
+            else
+            {
+                savedGoalList = new List<SavedGoal>();
+            }
         }
 
+        public void LoadSavedData()
+        {
+            if (!File.Exists("SavedData.json"))
+            {
+                savedGoalList = new List<SavedGoal>();
+                return;
+            }
+
+            var data = File.ReadAllText("SavedData.json");
+
+            savedGoalList = JsonConvert.DeserializeObject<List<SavedGoal>>(data);
+        }
+
+        /// <summary>Adds the font from memory, loads it up from the resources.</summary>
 		private void AddFontFromMemory()
 		{
 			PrivateFontCollection pfc = new PrivateFontCollection();
@@ -43,15 +67,23 @@ namespace RSIGoal
 
 			var ff = pfc.Families.First();
 			myFontFamily = ff;
-			myFont = new Font(ff, 32);
+			fontDollarAmmount = new Font(ff, 32);
+            fontFans = new Font(ff, 24);
 		}
 
 		Brush shadowBrush;
 		Brush textBrush;
 		private string FundStats = "-";
+        private string NumberOfFans = "";
 		private FontFamily myFontFamily;
-		private Font myFont;
+		private Font fontDollarAmmount;
+        private Font fontFans;
 
+        List<SavedGoal> savedGoalList;
+
+        /// <summary>Handles the Paint event of the frmMain control.</summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PaintEventArgs"/> instance containing the event data.</param>
 		private void frmMain_Paint(object sender, PaintEventArgs e)
 		{
 			e.Graphics.DrawImage(Resources.seriescarouselbg, 0, 0);
@@ -66,26 +98,33 @@ namespace RSIGoal
 					e.Graphics.DrawImage(bg_image, bg_image.Width * x, bg_image.Height * y);
 				}
 
-			DrawTextShadow(e.Graphics);
+            int top = 0;
+
+			DrawDollarAmount(e.Graphics, ref top);
+
+            DrawFans(e.Graphics, ref top);
 		}
 
-		private void DrawTextShadow(Graphics graphics)
+        /// <summary>Draws the fund amount.</summary>
+        /// <param name="graphics">The graphics.</param>
+        /// <param name="top">The top.</param>
+        private void DrawDollarAmount(Graphics graphics, ref int top)
 		{
-			var len = graphics.MeasureString(FundStats, myFont);
+			var len = graphics.MeasureString(FundStats, fontDollarAmmount);
 
-			var top = (int)(this.ClientSize.Height / 2 - len.Height / 2);
+            top += 20;
 
 			if (FundStats.Length > 5)
 			{
 				var left = (int)(this.ClientSize.Width / 2 - len.Width / 2);
 
-				graphics.DrawString(FundStats, myFont, shadowBrush, new Point(left - 5, top + 5));
-				graphics.DrawString(FundStats, myFont, textBrush, new Point(left, top));
+				graphics.DrawString(FundStats, fontDollarAmmount, shadowBrush, new Point(left - 5, top + 5));
+				graphics.DrawString(FundStats, fontDollarAmmount, textBrush, new Point(left, top));
 			}
 			else
 			{
 				var measureText = "$ 99 999 999";
-				var pntLen = graphics.MeasureString(measureText, myFont);
+				var pntLen = graphics.MeasureString(measureText, fontDollarAmmount);
 				//var left = (int)((int)(this.ClientSize.Width / 2 - pntLen.Width / 2));// - len.Width);
 				//graphics.DrawLine(Pens.Yellow, left, 0, left, this.ClientSize.Height);
 
@@ -95,40 +134,82 @@ namespace RSIGoal
 				right -= (int)len.Width;
 				//graphics.DrawLine(Pens.Green, right, 0, right, this.ClientSize.Height);
 
-				graphics.DrawString(FundStats, myFont, shadowBrush, new Point(right - 5, top + 5));
-				graphics.DrawString(FundStats, myFont, textBrush, new Point(right, top));
+				graphics.DrawString(FundStats, fontDollarAmmount, shadowBrush, new Point(right - 5, top + 5));
+				graphics.DrawString(FundStats, fontDollarAmmount, textBrush, new Point(right, top));
 			}
-		}
 
-		private void GetData()
-		{
-			HttpWebRequest hwr = HttpWebRequest.CreateHttp("https://robertsspaceindustries.com/api/stats/getCrowdfundStats");
-			hwr.Method = "POST";
+            top += (int)(len.Height);
+        }
 
-			var sw = new StreamWriter(hwr.GetRequestStream());
-			sw.Write("{\"fans\":true,\"funds\":true,\"alpha_slots\":true}");
-			sw.Flush();
+        /// <summary>Draws the fans.</summary>
+        /// <param name="graphics">The graphics.</param>
+        /// <param name="top">The top.</param>
+        private void DrawFans(Graphics graphics, ref int top)
+        {
+            top += 20;
 
-			var response = hwr.GetResponse();
-			JsonTextReader tr = new JsonTextReader(new StreamReader(response.GetResponseStream()));
-			var data = JsonSerializer.CreateDefault().Deserialize<CrowdFundStats>(tr);
+            var fansText = string.Format("Fans: {0}", NumberOfFans);
 
-			// '{"success":1,"data":{"fans":535841,"funds":5223978141,"next_goal":{"title":"53M","percentage":23.98,"goal":"$53,000,000"},"alpha_slots_left":0},"code":"OK","msg":"OK"}'
-			if (data.success == 1)
-			{
-				FundStats = (data.data.funds / 100.0m).ToString("$ ###,###,###");
-				this.Refresh();
-			}
-		}
+            graphics.DrawString(fansText, fontFans, shadowBrush, new Point(20, top + 5));
+            graphics.DrawString(fansText, fontFans, textBrush, new Point(20, top));
+        }
 
 		private void cmdGrabData_Click(object sender, EventArgs e)
 		{
-			GetData();
+            if (bgwLoadData.IsBusy)
+            {
+                return;
+            }
+
+            bgwLoadData.RunWorkerAsync(null);
 		}
 
 		private void frmMain_ResizeEnd(object sender, EventArgs e)
 		{
 			this.Refresh();
 		}
+
+        private void bgwLoadData_DoWork(object sender, DoWorkEventArgs e)
+        {
+            bgwLoadData.ReportProgress(0);
+            HttpWebRequest hwr = HttpWebRequest.CreateHttp("https://robertsspaceindustries.com/api/stats/getCrowdfundStats");
+            hwr.Method = "POST";
+
+            var sw = new StreamWriter(hwr.GetRequestStream());
+            sw.Write("{\"fans\":true,\"funds\":true,\"alpha_slots\":true}");
+            sw.Flush();
+
+            var response = hwr.GetResponse();
+            bgwLoadData.ReportProgress(50);
+
+            JsonTextReader tr = new JsonTextReader(new StreamReader(response.GetResponseStream()));
+            var data = JsonSerializer.CreateDefault().Deserialize<CrowdFundStats>(tr);
+            bgwLoadData.ReportProgress(75);
+
+            // '{"success":1,"data":{"fans":535841,"funds":5223978141,"next_goal":{"title":"53M","percentage":23.98,"goal":"$53,000,000"},"alpha_slots_left":0},"code":"OK","msg":"OK"}'
+            if (data.success == 1)
+            {
+                FundStats = (data.data.funds / 100.0m).ToString("$ ###,###,###");
+                NumberOfFans = data.data.fans.ToString("###,###");
+            }
+            bgwLoadData.ReportProgress(90);
+
+            SavedGoal sg = new SavedGoal();
+            sg.Fans = data.data.fans;
+            sg.Funds = data.data.funds;
+            sg.Timestamp = DateTime.Now;
+
+            savedGoalList.Add(sg);
+
+            File.WriteAllText("SavedData.json", JsonConvert.SerializeObject(savedGoalList));
+
+            bgwLoadData.ReportProgress(100);
+        }
+
+        private void bgwLoadData_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            this.Text = "Loaded: " + e.ProgressPercentage + " %";
+            this.Refresh();
+        }
     }
 }
