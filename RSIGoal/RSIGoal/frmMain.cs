@@ -51,6 +51,11 @@ namespace RSIGoal
             var data = File.ReadAllText("SavedData.json");
 
             savedGoalList = JsonConvert.DeserializeObject<List<SavedGoal>>(data);
+
+            var goal = (from x in savedGoalList orderby x.Timestamp descending select x).First();
+            FundStats = (goal.Funds / 100.0m).ToString("$ ###,###,###");
+            NumberOfFans = goal.Fans.ToString("###,###");
+            FleetNumber = goal.Fleet.ToString("###,###");
         }
 
         /// <summary>Adds the font from memory, loads it up from the resources.</summary>
@@ -75,11 +80,15 @@ namespace RSIGoal
 		Brush textBrush;
 		private string FundStats = "-";
         private string NumberOfFans = "";
+        private string FleetNumber = "";
 		private FontFamily myFontFamily;
 		private Font fontDollarAmmount;
         private Font fontFans;
 
         List<SavedGoal> savedGoalList;
+        decimal DeltaFunds;
+        decimal DeltaFans;
+        decimal DeltaFleet;
 
         /// <summary>Handles the Paint event of the frmMain control.</summary>
         /// <param name="sender">The source of the event.</param>
@@ -146,12 +155,20 @@ namespace RSIGoal
         /// <param name="top">The top.</param>
         private void DrawFans(Graphics graphics, ref int top)
         {
-            top += 20;
+            top += 5;
 
             var fansText = string.Format("Fans: {0}", NumberOfFans);
+			var len = graphics.MeasureString(fansText, fontFans);
 
             graphics.DrawString(fansText, fontFans, shadowBrush, new Point(20, top + 5));
             graphics.DrawString(fansText, fontFans, textBrush, new Point(20, top));
+
+            top += (int)(5 + len.Height);
+
+            var fleetText = string.Format("Fleet: {0}", FleetNumber);
+
+            graphics.DrawString(fleetText, fontFans, shadowBrush, new Point(20, top + 5));
+            graphics.DrawString(fleetText, fontFans, textBrush, new Point(20, top));
         }
 
 		private void cmdGrabData_Click(object sender, EventArgs e)
@@ -176,7 +193,7 @@ namespace RSIGoal
             hwr.Method = "POST";
 
             var sw = new StreamWriter(hwr.GetRequestStream());
-            sw.Write("{\"fans\":true,\"funds\":true,\"alpha_slots\":true}");
+            sw.Write("{\"fans\":true,\"funds\":true,\"alpha_slots\":true,\"fleet\":true}");
             sw.Flush();
 
             var response = hwr.GetResponse();
@@ -186,17 +203,19 @@ namespace RSIGoal
             var data = JsonSerializer.CreateDefault().Deserialize<CrowdFundStats>(tr);
             bgwLoadData.ReportProgress(75);
 
-            // '{"success":1,"data":{"fans":535841,"funds":5223978141,"next_goal":{"title":"53M","percentage":23.98,"goal":"$53,000,000"},"alpha_slots_left":0},"code":"OK","msg":"OK"}'
+            // '{"success":1,"data":{"fans":535841,"funds":5223978141,"fleet":520000,"next_goal":{"title":"53M","percentage":23.98,"goal":"$53,000,000"},"alpha_slots_left":0},"code":"OK","msg":"OK"}'
             if (data.success == 1)
             {
                 FundStats = (data.data.funds / 100.0m).ToString("$ ###,###,###");
                 NumberOfFans = data.data.fans.ToString("###,###");
+                FleetNumber = data.data.fleet.ToString("###,###");
             }
             bgwLoadData.ReportProgress(90);
 
             SavedGoal sg = new SavedGoal();
             sg.Fans = data.data.fans;
             sg.Funds = data.data.funds;
+            sg.Fleet = (long)data.data.fleet;
             sg.Timestamp = DateTime.Now;
 
             savedGoalList.Add(sg);

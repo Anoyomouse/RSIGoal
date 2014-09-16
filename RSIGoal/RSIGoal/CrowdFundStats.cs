@@ -18,6 +18,7 @@ namespace RSIGoal
 	{
 		public long fans { get; set; }
 		public decimal funds { get; set; }
+        public decimal fleet { get; set; }
 		public CrowdFundStatsDataNextGoal next_goal { get; set; }
 		public long alpha_slots_left { get; set; }
 	}

@@ -34,7 +34,7 @@
             // 
             // cmdGrabData
             // 
-            this.cmdGrabData.Location = new System.Drawing.Point(277, 98);
+            this.cmdGrabData.Location = new System.Drawing.Point(277, 123);
             this.cmdGrabData.Name = "cmdGrabData";
             this.cmdGrabData.Size = new System.Drawing.Size(70, 27);
             this.cmdGrabData.TabIndex = 0;
@@ -52,7 +52,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(359, 137);
+            this.ClientSize = new System.Drawing.Size(359, 171);
             this.Controls.Add(this.cmdGrabData);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
