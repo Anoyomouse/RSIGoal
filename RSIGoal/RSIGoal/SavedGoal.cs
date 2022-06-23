@@ -18,7 +18,5 @@ namespace RSIGoal
         public decimal Funds { get; set; }
 
         public long Fans { get; set; }
-
-        public long Fleet { get; set; }
     }
 }

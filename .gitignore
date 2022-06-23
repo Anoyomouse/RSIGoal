@@ -154,3 +154,6 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+# My Files
+RSIGoal/RSIGoal/SavedData.json
