@@ -22,7 +22,6 @@ using RSIGoal.Properties;
 
 namespace RSIGoal
 {
-    [SupportedOSPlatform("windows")]
     public partial class frmMain : Form
     {
         /// <summary>Initializes a new instance of the <see cref="frmMain"/> class.</summary>

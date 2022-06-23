@@ -21,7 +21,10 @@ namespace RSIGoal
             Application.EnableVisualStyles();
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmMain());
+            #pragma warning disable CA1416 // Validate platform compatibility
+            var mainForm = new frmMain();
+            #pragma warning restore CA1416 // Validate platform compatibility
+            Application.Run(mainForm);
         }
     }
 }
